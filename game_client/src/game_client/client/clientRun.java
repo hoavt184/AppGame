@@ -5,12 +5,16 @@
  */
 package game_client.client;
 
+import game_client.client.view.Login;
+
 /**
  *
  * @author Vu Tien Hoa
  */
 public class clientRun {
     public static void main(String[] args) {
-        System.out.println("client");
+        System.out.println("client is running...");
+        Login view = new Login();
+        view.setVisible(true);
     }
 }
