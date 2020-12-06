@@ -109,7 +109,6 @@ public class ClientController {
             register.setVisible(true);
             register.addListenBtnRegisterMain(new listenBtnRegisterMain());
             register.addListenCancelRegister(new listenCancelRegister());
-            
         }
         
     }
@@ -120,9 +119,11 @@ public class ClientController {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            User user = register.getUser();
-            Request req = new Request("register", (Object)user);
-            send(req);
+            if(register.checkEmpty()){
+                User user = register.getUser();
+                Request req = new Request("register", (Object)user);
+                send(req);
+            }
         }
     }
     class listenCancelRegister implements ActionListener{

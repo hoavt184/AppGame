@@ -13,6 +13,7 @@ import controller.ClientController;
  */
 public class ClientMain {
     public static void main(String[] args) {
+        System.out.println("Client is running...");
         ClientController ctr = new ClientController();
     }
 }

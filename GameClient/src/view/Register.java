@@ -78,8 +78,9 @@ public class Register extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtUsername, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnRegister)
-                            .addComponent(btnCancel))))
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(btnCancel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(btnRegister, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))))
                 .addContainerGap(123, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -101,9 +102,9 @@ public class Register extends javax.swing.JFrame {
                     .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(32, 32, 32)
                 .addComponent(btnRegister)
-                .addGap(29, 29, 29)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
                 .addComponent(btnCancel)
-                .addContainerGap(31, Short.MAX_VALUE))
+                .addGap(24, 24, 24))
         );
 
         pack();
@@ -155,7 +156,23 @@ public class Register extends javax.swing.JFrame {
     private javax.swing.JPasswordField txtPassword;
     private javax.swing.JTextField txtUsername;
     // End of variables declaration//GEN-END:variables
-
+    public boolean checkEmpty(){
+        String msg = null;
+        if(txtName.getText().equals("")){
+            msg ="Please enter your complete information";
+        }
+        if(txtUsername.getText().equals("")){
+             msg ="Please enter your complete information";
+        }
+        if(txtPassword.getText().equals("")){
+            msg ="Please enter your complete information";
+        }
+        if(msg !=null){
+            showM(msg);
+            return false;
+        }
+        return true;
+    }
     public User getUser() {
         return (new User(txtName.getText(), txtUsername.getText(), txtPassword.getText()));
     }

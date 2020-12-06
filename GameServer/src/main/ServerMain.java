@@ -13,6 +13,7 @@ import controller.ServerController;
  */
 public class ServerMain {
     public static void main(String[] args) {
+        System.out.println("Sever is running...");
         ServerController ctr = new ServerController();
     }
 }
