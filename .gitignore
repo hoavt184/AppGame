@@ -1,4 +1,7 @@
-/game_client/nbproject/private/
-/game_server/nbproject/private/
-/game_server/build/
-/game_client/build/
+/GameServer/nbproject/private/
+/GameClient/nbproject/private/
+/GameModels/nbproject/private/
+/GameModels/build/
+/GameModels/dist/
+/GameClient/build/
+/GameServer/build/
