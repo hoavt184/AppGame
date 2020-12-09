@@ -16,6 +16,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -35,10 +36,14 @@ public class ServerController {
         try {
             open();
             con = getDBConnection();
+            new update().start();
             while (true) {
                 try {
                     Socket clientSocket = serverSocket.accept();
+                    
+                    
                     new Listening(clientSocket).start();
+                   
 
                 } catch (IOException ex) {
                     Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
@@ -48,12 +53,34 @@ public class ServerController {
             Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
+    class update extends  Thread{
+        public void run(){
+            while(true){
+                try {
+                    this.sleep(5000);
+                    updateOnline();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }
+    public void updateOnline(){
+        for(Map.Entry<String,Player> p :listPlayer.entrySet()){
+            if(p.getValue().getSocket().isClosed()){
+                listPlayer.remove(p.getKey());
+                
+                break;
+            }
+        }
+        System.out.println(listPlayer.size());
+    }
     class Listening extends Thread {
 
         private Socket clientSocket;
         private ObjectOutputStream oos;
         private ObjectInputStream ois;
+        private User user;
 
         public Listening(Socket clientSocket) {
             try {
@@ -64,7 +91,6 @@ public class ServerController {
                 Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-
         @Override
         public void run() {
             while (clientSocket.isConnected()) {                
@@ -76,6 +102,12 @@ public class ServerController {
                             break;
                         case "register":
                             handleRegister(response);
+                            break;
+                        case "getListPlayer":
+                            sendListPlayer();
+                            break;
+                        case "viewRank":
+                            handleRank();
                             break;
                     }
                 } catch (IOException ex) {
@@ -93,19 +125,54 @@ public class ServerController {
                 
             }
         }
-
+        public void handleRank(){
+            ArrayList<User> res = getListPlayer();
+            Request req = new Request("sendRank",(Object) res);
+            send(req);
+        }
+        public ArrayList<User> getListPlayer(){
+            ArrayList<User> res = new ArrayList<>();
+            try {
+                String sql ="select * from tbl_user";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery();
+                while(rs.next()){
+                    res.add(new User(rs.getString("userName"), rs.getFloat("averageMoveWinMatch"),rs.getFloat("averageMoveLostMatch"), rs.getFloat("score")));
+//                    res.add(new User(rs.getString("userName"), rs.getFloat("averageMoveWinMatch"),rs.getFloat("averageMoveLostMatch"), rs.getFloat("score")));
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return res;
+            
+        }
+        public void sendListPlayer(){
+            ArrayList<User> res= new ArrayList<>();
+            for(Map.Entry<String, Player> p : listPlayer.entrySet()){
+                res.add(p.getValue().user);
+            }
+            Request req = new Request("sendListPlayer",(Object)res);
+            send(req);
+        }
+        
         private void handleLogin(Request response) {
             Request req = null;
             try {
 
                 User user = (User) response.getData();
-                String query = "select * from users where username=? and password=? limit 1";
+                String query = "select * from tbl_user where userName=? and passWord=? limit 1";
                 PreparedStatement ps = con.prepareStatement(query);
-                ps.setString(1, user.getUsername());
-                ps.setString(2, user.getPassword());
+                ps.setString(1, user.getUserName());
+                ps.setString(2, user.getPassWord());
                 ResultSet rs = ps.executeQuery();
                 if (rs.next()) {
+                    this.user = user;
                     req = new Request("login", (Object) user);
+                    Player player = new Player(this.clientSocket);
+                    player.user = getUser(user.getUserName());
+                    player.user.setStatus(1);
+                    
+                    listPlayer.put(this.user.getUserName(),player);
                     send(req);
                     return;
                 }
@@ -115,18 +182,31 @@ public class ServerController {
             req = new Request("login", (Object) false);
             send(req);
         }
-
+        public User getUser(String userName){
+            User u = null;
+            try {
+                String sql ="select * from tbl_user where userName=?";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setString(1,userName);
+                ResultSet rs = ps.executeQuery();
+                rs.next();
+                u = new User(rs.getString("userName"),rs.getFloat("score"));
+            } catch (SQLException ex) {
+                Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return u;
+        }
         private void handleRegister(Request response) {
             User user = (User) response.getData();
             String responseMsg = "failed";
-            if (!checkExistUser(user.getUsername())) {
+            if (!checkExistUser(user.getUserName())) {
                 try {
-                    String query = "insert into users(name,username,password) values(?,?,?)";
+                    String query = "insert into tbl_user(name,userName,passWord) values(?,?,?)";
                     PreparedStatement ps;
                     ps = con.prepareStatement(query);
                     ps.setString(1, user.getName());
-                    ps.setString(2, user.getUsername());
-                    ps.setString(3, user.getPassword());
+                    ps.setString(2, user.getUserName());
+                    ps.setString(3, user.getPassWord());
                     ps.execute();
                     responseMsg = "success";
                     send(new Request("register", (Object) responseMsg));
@@ -153,7 +233,7 @@ public class ServerController {
 
         private boolean checkExistUser(String username) {
             try {
-                String query = "select * from users where username=? limit 1";
+                String query = "select * from tbl_user where userName=? limit 1";
                 PreparedStatement ps = con.prepareStatement(query);
                 ps.setString(1, username);
                 ResultSet rs = ps.executeQuery();
@@ -177,7 +257,7 @@ public class ServerController {
         try {
             String dbUsername = "root";
             String dbPassword = "";
-            String dbName = "appgame";
+            String dbName = "btl";
             String url = "jdbc:mysql://localhost/" + dbName;
 
             String className = "com.mysql.jdbc.Driver";

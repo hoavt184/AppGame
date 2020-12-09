@@ -13,10 +13,17 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.util.Pair;
 import view.Home;
 import view.Login;
+import view.Rank;
 import view.Register;
 
 /**
@@ -40,9 +47,26 @@ public class ClientController {
         login.addListenBtnLogin( new ListenBtnLogin());
         login.addListenBtnRegister(new ListenBtnRegister());
         new Listening().start();
+        new updateOnline().start();
     }
+    class updateOnline extends Thread{
+        public void run(){
+            while(true){
+                try {
+                    this.sleep(5000);
+                    getListPlayer();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+    }
+    public void getListPlayer(){
+            Request req = new Request("getListPlayer");
+            send(req);
+     }
     class Listening extends Thread{
-
+        
         @Override
         public void run() {
 //            super.run(); //To change body of generated methods, choose Tools | Templates.
@@ -56,6 +80,12 @@ public class ClientController {
                         case "register":
                             handleRegister(response);
                             break;
+                        case "sendListPlayer":
+                            handleListPlayer(response);
+                            break;
+                        case "sendRank":
+                            handleRank(response);
+                            break;
                     }
                 } catch (IOException ex) {
                     Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
@@ -64,20 +94,98 @@ public class ClientController {
                 }
             }
         }
+        class byScore implements Comparator<User>{
 
+            @Override
+            public int compare(User o1, User o2) {
+                //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                if(o1.getScore()>o2.getScore()) return 1;
+                if(o1.getScore()<o2.getScore()) return -1;
+                return 0;
+            }
+            
+        }
+        class byWin implements Comparator<User>{
+
+            @Override
+            public int compare(User o1, User o2) {
+                if(o1.getAverageMoveWinMatch()<o2.getAverageMoveWinMatch()) return -1;
+                if(o1.getAverageMoveWinMatch()>o2.getAverageMoveWinMatch()) return 1;
+                return 0;
+            }
+            
+        }
+        class byLost implements Comparator<User>{
+
+            @Override
+            public int compare(User o1, User o2) {
+                if(o1.getAverageMoveLostMatch()<o2.getAverageMoveLostMatch()) return 1;
+                if(o1.getAverageMoveLostMatch()>o2.getAverageMoveLostMatch()) return -1;
+                return 0;
+            }
+            
+        }
+        public void showRankScore(ArrayList<User> l, Rank rank){
+            Collections.sort(l,new byScore());
+            ArrayList<Pair<String,String>> ranks = new ArrayList<>();
+            for(User u :l){
+                ranks.add(new Pair(u.getUserName(),String.valueOf(u.getScore())));
+            }
+            rank.showRank(ranks);
+            
+        }
+        public void showRankWin(ArrayList<User> l, Rank rank){
+            Collections.sort(l,new byWin());
+            ArrayList<Pair<String,String>> ranks = new ArrayList<>();
+            for(User u :l){
+                ranks.add(new Pair(u.getUserName(),String.valueOf(u.getAverageMoveWinMatch())));
+            }
+            rank.showRank(ranks);
+            
+        }
+        public void showRankLost(ArrayList<User> l, Rank rank){
+            Collections.sort(l,new byLost());
+            ArrayList<Pair<String,String>> ranks = new ArrayList<>();
+            for(User u :l){
+                ranks.add(new Pair(u.getUserName(),String.valueOf(u.getAverageMoveLostMatch())));
+            }
+            rank.showRank(ranks);
+            
+        }
+        public void handleRank(Request res){
+            ArrayList<User> listRank=(ArrayList<User>) res.getData();
+            Rank rank = new Rank();
+            rank.setVisible(true);
+            showRankWin(listRank, rank);
+        }
+        public void handleListPlayer(Request res){
+            ArrayList<User> list = (ArrayList<User>) res.getData();
+            home.showListPlayer(list);
+        }
         private void handleLogin(Request response) {
             if(response.getData() instanceof User){
                 myUser = (User) response.getData();
                 login.showM("Login Successfully!");
                 home = new Home();
                 home.setVisible(true);
+                home.addListBtnRank(new ListenBtnRank());
+                getListPlayer();
                 login.dispose();
             }
             else{
                 login.showM("Login Failed!");
             }
         }
+        class ListenBtnRank implements ActionListener{
 
+            @Override
+            public void actionPerformed(ActionEvent e) {
+               Request req = new Request("viewRank");
+               send(req);
+            }
+            
+        }
+        
         private void handleRegister(Request response) {
             String msg = (String) response.getData();
             if(msg.equals("success")){

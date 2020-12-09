@@ -13,22 +13,45 @@ import java.io.Serializable;
  */
 public class User implements Serializable{
     private int user_id;
-    private String name,username,password,score,status;
+    private String name,userName,passWord;
+    private float score,averageMoveWinMatch,averageMoveLostMatch;
+    
+    private int status,totalWinMatch,totalLostMatch,totalMoveWinMatch,totalMoveLost;
 
-    public User() {
+     public User() {
     }
 
-    public User(String username, String password) {
-        this.username = username;
-        this.password = password;
+    public User(String userName, String passWord) {
+        this.userName = userName;
+        this.passWord = passWord;
     }
 
-    public User(String name, String username, String password) {
+    public User(String name, String userName, String passWord) {
         this.name = name;
-        this.username = username;
-        this.password = password;
+        this.userName = userName;
+        this.passWord = passWord;
     }
 
+    public User(String userName, float score, int status) {
+        this.userName = userName;
+        this.score = score;
+        this.status = status;
+    }
+
+    public User(String userName, float averageMoveWinMatch, float averageMoveLostMatch, float score) {
+        this.userName = userName;
+        this.averageMoveWinMatch = averageMoveWinMatch;
+        this.averageMoveLostMatch = averageMoveLostMatch;
+        this.score = score;
+    }
+
+    public User(String userName, float score) {
+        this.userName = userName;
+        this.score = score;
+    }
+
+    
+     
     public int getUser_id() {
         return user_id;
     }
@@ -45,36 +68,86 @@ public class User implements Serializable{
         this.name = name;
     }
 
-    public String getUsername() {
-        return username;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPassWord() {
+        return passWord;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPassWord(String passWord) {
+        this.passWord = passWord;
     }
 
-    public String getScore() {
+    public float getScore() {
         return score;
     }
 
-    public void setScore(String score) {
+    public void setScore(float score) {
         this.score = score;
     }
 
-    public String getStatus() {
+    public float getAverageMoveWinMatch() {
+        return averageMoveWinMatch;
+    }
+
+    public void setAverageMoveWinMatch(float averageMoveWinMatch) {
+        this.averageMoveWinMatch = averageMoveWinMatch;
+    }
+
+    public float getAverageMoveLostMatch() {
+        return averageMoveLostMatch;
+    }
+
+    public void setAverageMoveLostMatch(float averageMoveLostMatch) {
+        this.averageMoveLostMatch = averageMoveLostMatch;
+    }
+
+    public int getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(int status) {
         this.status = status;
     }
+
+    public int getTotalWinMatch() {
+        return totalWinMatch;
+    }
+
+    public void setTotalWinMatch(int totalWinMatch) {
+        this.totalWinMatch = totalWinMatch;
+    }
+
+    public int getTotalLostMatch() {
+        return totalLostMatch;
+    }
+
+    public void setTotalLostMatch(int totalLostMatch) {
+        this.totalLostMatch = totalLostMatch;
+    }
+
+    public int getTotalMoveWinMatch() {
+        return totalMoveWinMatch;
+    }
+
+    public void setTotalMoveWinMatch(int totalMoveWinMatch) {
+        this.totalMoveWinMatch = totalMoveWinMatch;
+    }
+
+    public int getTotalMoveLost() {
+        return totalMoveLost;
+    }
+
+    public void setTotalMoveLost(int totalMoveLost) {
+        this.totalMoveLost = totalMoveLost;
+    }
+    
+   
     
 }

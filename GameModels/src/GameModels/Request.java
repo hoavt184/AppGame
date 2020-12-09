@@ -19,7 +19,9 @@ public class Request implements Serializable{
         this.action = action;
         this.data = data;
     }
-
+    public Request(String action) {
+        this.action = action;
+    }
     public String getAction() {
         return action;
     }

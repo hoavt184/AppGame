@@ -16,6 +16,7 @@ import java.net.Socket;
 public class Player {
     private Socket socket;
     private int status;
+    public User user;
     public ObjectOutputStream oos;
     public ObjectInputStream ois ;
     public Player(Socket socket){
