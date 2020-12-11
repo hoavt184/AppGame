@@ -21,6 +21,7 @@ public class Player {
     public ObjectInputStream ois ;
     public Player(Socket socket){
         this.socket = socket;
+       
     }
     public Socket getSocket(){
         return this.socket;

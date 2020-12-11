@@ -7,8 +7,12 @@ package view;
 
 import GameModels.User;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Vector;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -24,6 +28,7 @@ public class Home extends javax.swing.JFrame {
         initComponents();
         setLocationRelativeTo(null);
     }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -91,6 +96,15 @@ public class Home extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
+    public void showM(String m){
+        JOptionPane.showMessageDialog(this, m);
+    }
+    public void addListenTable(MouseListener m){
+        tableMain.addMouseListener(m);
+    }
+    public JTable getTable(){
+        return this.tableMain;
+    }
     public static void main(String args[]) {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
@@ -121,6 +135,9 @@ public class Home extends javax.swing.JFrame {
                 new Home().setVisible(true);
             }
         });
+    }
+    public int showConfirmYesNo(String s, String title){
+         return JOptionPane.showConfirmDialog(this, s,title,JOptionPane.YES_NO_OPTION);
     }
 
     public void showListPlayer(ArrayList<User> list){

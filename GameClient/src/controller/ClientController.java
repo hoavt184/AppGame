@@ -9,6 +9,8 @@ import GameModels.Request;
 import GameModels.User;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -21,6 +23,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.util.Pair;
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import view.ChessBoard;
 import view.Home;
 import view.Login;
 import view.Rank;
@@ -40,14 +46,51 @@ public class ClientController {
     private Register register;
     private User myUser;
     private Home home;
+    private Rank rank;
+    private ArrayList<User> listRank;
     public ClientController(){
         open();
         login =new Login();
         login.setVisible(true);
         login.addListenBtnLogin( new ListenBtnLogin());
         login.addListenBtnRegister(new ListenBtnRegister());
+        
         new Listening().start();
         new updateOnline().start();
+    }
+    class ListenTableMain implements MouseListener{
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            JTable table = home.getTable();
+            int row = table.rowAtPoint(e.getPoint());
+            String userName = (String) table.getValueAt(row, 0);
+            if(home.showConfirmYesNo("Ban co muon thach dau voi "+userName, "Thach dau")==0){
+                Request req = new Request("challenge",(Object)userName);
+                send(req);
+            }
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e) {
+            
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e) {
+            
+        }
+
+        @Override
+        public void mouseEntered(MouseEvent e) {
+            
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e) {
+            
+        }
+        
     }
     class updateOnline extends Thread{
         public void run(){
@@ -86,6 +129,15 @@ public class ClientController {
                         case "sendRank":
                             handleRank(response);
                             break;
+                        case "sendInvite":
+                            handleInvite(response);
+                            break;
+                        case "play":
+                            handlePlay(response);
+                            break;
+                        case "youWin":
+                            handleWin(response);
+                            break;
                     }
                 } catch (IOException ex) {
                     Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
@@ -94,8 +146,40 @@ public class ClientController {
                 }
             }
         }
+        public void handleWin(Request res){
+            System.out.println("okk");
+            String user = (String)res.getData();
+            home.showM("ban da thang "+user);
+        }
+        public void handlePlay(Request res){
+            String user = (String) res.getData();
+            ChessBoard chess = new ChessBoard();
+            chess.addActionBtnSur(new ListenBtnSur(user,chess));
+            chess.setVisible(true);
+        }
+        class ListenBtnSur implements ActionListener{
+            private String user ;
+            private ChessBoard chess;
+            public ListenBtnSur(String user, ChessBoard chess){
+                this.user = user;
+                this.chess = chess;
+            }
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                chess.dispose();
+                Request req = new Request("Sur",(Object)user);
+                send(req);
+            }
+            
+        }
+        public void handleInvite(Request res){
+            String user = (String) res.getData();
+            if(home.showConfirmYesNo(user +" Muon thach dau voi ban", "loi moi")==0){
+                Request req = new Request("acceptInvite",(Object)user);
+                send(req);
+            }
+        }
         class byScore implements Comparator<User>{
-
             @Override
             public int compare(User o1, User o2) {
                 //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -103,7 +187,6 @@ public class ClientController {
                 if(o1.getScore()<o2.getScore()) return -1;
                 return 0;
             }
-            
         }
         class byWin implements Comparator<User>{
 
@@ -125,38 +208,58 @@ public class ClientController {
             }
             
         }
-        public void showRankScore(ArrayList<User> l, Rank rank){
-            Collections.sort(l,new byScore());
+        public void showRankScore( Rank rank){
+            Collections.sort(listRank,new byScore());
             ArrayList<Pair<String,String>> ranks = new ArrayList<>();
-            for(User u :l){
+            for(User u :listRank){
                 ranks.add(new Pair(u.getUserName(),String.valueOf(u.getScore())));
             }
             rank.showRank(ranks);
             
         }
-        public void showRankWin(ArrayList<User> l, Rank rank){
-            Collections.sort(l,new byWin());
+        public void showRankWin( Rank rank){
+            Collections.sort(listRank,new byWin());
             ArrayList<Pair<String,String>> ranks = new ArrayList<>();
-            for(User u :l){
+            for(User u :listRank){
                 ranks.add(new Pair(u.getUserName(),String.valueOf(u.getAverageMoveWinMatch())));
             }
             rank.showRank(ranks);
             
         }
-        public void showRankLost(ArrayList<User> l, Rank rank){
-            Collections.sort(l,new byLost());
+        public void showRankLost(Rank rank){
+            Collections.sort(listRank,new byLost());
             ArrayList<Pair<String,String>> ranks = new ArrayList<>();
-            for(User u :l){
+            for(User u :listRank){
                 ranks.add(new Pair(u.getUserName(),String.valueOf(u.getAverageMoveLostMatch())));
             }
             rank.showRank(ranks);
             
         }
         public void handleRank(Request res){
-            ArrayList<User> listRank=(ArrayList<User>) res.getData();
-            Rank rank = new Rank();
+            listRank=(ArrayList<User>) res.getData();
+            rank = new Rank();
             rank.setVisible(true);
-            showRankWin(listRank, rank);
+            rank.addListenBtn(new ListenBtnRankBy());
+            showRankWin(rank);
+        }
+        class ListenBtnRankBy implements ActionListener{
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JButton btn = (JButton) e.getSource();
+                switch(btn.getName()){
+                    case "score":
+                        showRankScore(rank);
+                        break;
+                    case "lost":
+                        showRankLost(rank);
+                        break;
+                    case "win":
+                        showRankWin(rank);
+                        break;
+                }
+            }
+            
         }
         public void handleListPlayer(Request res){
             ArrayList<User> list = (ArrayList<User>) res.getData();
@@ -169,6 +272,7 @@ public class ClientController {
                 home = new Home();
                 home.setVisible(true);
                 home.addListBtnRank(new ListenBtnRank());
+                home.addListenTable(new ListenTableMain());
                 getListPlayer();
                 login.dispose();
             }

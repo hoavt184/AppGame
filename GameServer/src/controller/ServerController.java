@@ -109,6 +109,15 @@ public class ServerController {
                         case "viewRank":
                             handleRank();
                             break;
+                        case "challenge":
+                            forwardInvite(response);
+                            break;
+                        case "acceptInvite":
+                            handleAccept(response);
+                            break;
+                        case "Sur":
+                            handleSur(response);
+                            break;
                     }
                 } catch (IOException ex) {
                     try {
@@ -123,6 +132,128 @@ public class ServerController {
                     break;
                 }
                 
+            }
+        }
+        public void handleSur(Request res){
+            String user =(String) res.getData();
+            float score = getScore(user);
+            score++;
+            updateScore(user,score);
+            int total = getTotalWinMatch(user);
+            total++;
+            updateTotalWinMatch(user, total);
+            for(Map.Entry<String, Player> p :listPlayer.entrySet()){
+                if(p.getKey().equals(user)){
+                    try {
+                        Request req = new Request("youWin",(Object)this.user.getUserName());
+                        p.getValue().oos.writeObject(req);
+                        break;
+                    } catch (IOException ex) {
+                        Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+          
+        }
+        public void updateTotalWinMatch(String user, int total){
+            try {
+                String sql = "update tbl_user set totalWinMatch=? where userName=?";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setInt(1,total);
+                ps.setString(2, user);
+                ps.execute();
+            } catch (SQLException ex) {
+                Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        public void updateScore(String user,float score){
+            try {
+                String sql = "update tbl_user set score=? where userName=?";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setFloat(1,score);
+                ps.setString(2, user);
+                ps.execute();
+            } catch (SQLException ex) {
+                Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        public int getTotalLostMatch(String user){
+            try {
+                String sql ="select * from tbl_user where userName=?";
+                PreparedStatement ps =con.prepareStatement(sql);
+                ps.setString(1,user);
+                ResultSet rs = ps.executeQuery();
+                rs.next();
+                return rs.getInt("totalLostMatch");
+            } catch (SQLException ex) {
+                Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return 0;
+            
+        }
+        public float getScore(String user){
+             try {
+                String sql ="select * from tbl_user where userName=?";
+                PreparedStatement ps =con.prepareStatement(sql);
+                ps.setString(1,user);
+                ResultSet rs = ps.executeQuery();
+                rs.next();
+                return rs.getInt("score");
+            } catch (SQLException ex) {
+                Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return 0;
+        }
+        public int getTotalWinMatch(String user){
+             try {
+                String sql ="select * from tbl_user where userName=?";
+                PreparedStatement ps =con.prepareStatement(sql);
+                ps.setString(1,user);
+                ResultSet rs = ps.executeQuery();
+                rs.next();
+                return rs.getInt("totalWinMatch");
+            } catch (SQLException ex) {
+                Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return 0;
+        }
+        
+        public void handleAccept(Request res){
+            String user = (String) res.getData();
+            Request req = new Request("play",(Object)user);
+            send(req);
+            for(Map.Entry<String ,Player> p : listPlayer.entrySet()){
+                if(p.getKey().equals(this.user.getUserName())){
+                    p.getValue().user.setStatus(2);
+                    break;
+                }
+            }
+            for(Map.Entry<String, Player> p :listPlayer.entrySet()){
+                if(p.getKey().equals(user)){
+                    try {
+                        p.getValue().user.setStatus(2);
+                        Request req1 = new Request("play",(Object)this.user.getUserName());
+                        p.getValue().oos.writeObject(req1);
+                        break;
+                    } catch (IOException ex) {
+                        Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
+        public void forwardInvite(Request res){
+            String userName = (String) res.getData();
+            for(Map.Entry<String, Player> p : listPlayer.entrySet()){
+                if(p.getKey().equals(userName)){
+                    try {
+                        Request req = new Request("sendInvite",(Object)this.user.getUserName());
+                        p.getValue().oos.writeObject(req);
+                        break;
+                    } catch (IOException ex) {
+                        
+                        Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
             }
         }
         public void handleRank(){
@@ -170,6 +301,7 @@ public class ServerController {
                     req = new Request("login", (Object) user);
                     Player player = new Player(this.clientSocket);
                     player.user = getUser(user.getUserName());
+                    player.oos = this.oos;
                     player.user.setStatus(1);
                     
                     listPlayer.put(this.user.getUserName(),player);
