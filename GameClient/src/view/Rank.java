@@ -61,16 +61,16 @@ public class Rank extends javax.swing.JFrame {
 
             },
             new String [] {
-                "No", "User Name", "num"
+                "No", "Username", "Number"
             }
         ));
         jScrollPane1.setViewportView(tableRank);
 
-        btnScore.setText("Score");
+        btnScore.setText("Top Score");
 
-        btnWin.setText("win");
+        btnWin.setText("Top Win");
 
-        btnLost.setText("lost");
+        btnLost.setText("Top Lost");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

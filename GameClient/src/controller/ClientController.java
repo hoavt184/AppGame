@@ -183,8 +183,8 @@ public class ClientController {
             @Override
             public int compare(User o1, User o2) {
                 //throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                if(o1.getScore()>o2.getScore()) return 1;
-                if(o1.getScore()<o2.getScore()) return -1;
+                if(o1.getScore()<o2.getScore()) return 1;
+                if(o1.getScore()>o2.getScore()) return -1;
                 return 0;
             }
         }

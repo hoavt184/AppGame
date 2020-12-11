@@ -73,7 +73,7 @@ public class ServerController {
                 break;
             }
         }
-        System.out.println(listPlayer.size());
+//        System.out.println(listPlayer.size());
     }
     class Listening extends Thread {
 

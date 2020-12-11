@@ -84,8 +84,8 @@
             <Property name="model" type="javax.swing.table.TableModel" editor="org.netbeans.modules.form.editors2.TableModelEditor">
               <Table columnCount="3" rowCount="0">
                 <Column editable="true" title="No" type="java.lang.Object"/>
-                <Column editable="true" title="User Name" type="java.lang.Object"/>
-                <Column editable="true" title="num" type="java.lang.Object"/>
+                <Column editable="true" title="Username" type="java.lang.Object"/>
+                <Column editable="true" title="Number" type="java.lang.Object"/>
               </Table>
             </Property>
             <Property name="columnModel" type="javax.swing.table.TableColumnModel" editor="org.netbeans.modules.form.editors2.TableColumnModelEditor">
@@ -116,17 +116,17 @@
     </Container>
     <Component class="javax.swing.JButton" name="btnScore">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Score"/>
+        <Property name="text" type="java.lang.String" value="Top Score"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="btnWin">
       <Properties>
-        <Property name="text" type="java.lang.String" value="win"/>
+        <Property name="text" type="java.lang.String" value="Top Win"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="btnLost">
       <Properties>
-        <Property name="text" type="java.lang.String" value="lost"/>
+        <Property name="text" type="java.lang.String" value="Top Lost"/>
       </Properties>
     </Component>
   </SubComponents>
