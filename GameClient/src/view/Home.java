@@ -53,7 +53,7 @@ public class Home extends javax.swing.JFrame {
 
             },
             new String [] {
-                "User name", "Score", "Status"
+                "Username", "Score", "Status"
             }
         ));
         jScrollPane1.setViewportView(tableMain);

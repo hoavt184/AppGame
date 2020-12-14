@@ -282,8 +282,14 @@ public class ServerController {
             for(Map.Entry<String, Player> p : listPlayer.entrySet()){
                 res.add(p.getValue().user);
             }
-            Request req = new Request("sendListPlayer",(Object)res);
-            send(req);
+            if(res.size()>0){
+                Request req = new Request("sendListPlayer",(Object)res);
+                send(req);
+            }
+            else{
+                Request req = new Request("sendListPlayer",(Object)null);
+                send(req);
+            }
         }
         
         private void handleLogin(Request response) {

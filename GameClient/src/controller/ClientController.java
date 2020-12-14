@@ -174,7 +174,7 @@ public class ClientController {
         }
         public void handleInvite(Request res){
             String user = (String) res.getData();
-            if(home.showConfirmYesNo(user +" Muon thach dau voi ban", "loi moi")==0){
+            if(home.showConfirmYesNo(user +" Muốn thách đấu với bạn", "loi moi")==0){
                 Request req = new Request("acceptInvite",(Object)user);
                 send(req);
             }
@@ -240,7 +240,7 @@ public class ClientController {
             rank = new Rank();
             rank.setVisible(true);
             rank.addListenBtn(new ListenBtnRankBy());
-            showRankWin(rank);
+            showRankScore(rank);
         }
         class ListenBtnRankBy implements ActionListener{
 
@@ -257,13 +257,18 @@ public class ClientController {
                     case "win":
                         showRankWin(rank);
                         break;
+                    case "close":
+                        rank.dispose();
+                        break;
                 }
             }
             
         }
         public void handleListPlayer(Request res){
-            ArrayList<User> list = (ArrayList<User>) res.getData();
-            home.showListPlayer(list);
+            if(res.getData()!=null){
+                ArrayList<User> list = (ArrayList<User>) res.getData();
+                home.showListPlayer(list);
+            }
         }
         private void handleLogin(Request response) {
             if(response.getData() instanceof User){
