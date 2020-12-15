@@ -68,12 +68,10 @@ public class ServerController {
     public void updateOnline(){
         for(Map.Entry<String,Player> p :listPlayer.entrySet()){
             if(p.getValue().getSocket().isClosed()){
-                listPlayer.remove(p.getKey());
-                
+                listPlayer.remove(p.getKey());            
                 break;
             }
         }
-//        System.out.println(listPlayer.size());
     }
     class Listening extends Thread {
 
@@ -269,27 +267,19 @@ public class ServerController {
                 ResultSet rs = ps.executeQuery();
                 while(rs.next()){
                     res.add(new User(rs.getString("userName"), rs.getFloat("averageMoveWinMatch"),rs.getFloat("averageMoveLostMatch"), rs.getFloat("score")));
-//                    res.add(new User(rs.getString("userName"), rs.getFloat("averageMoveWinMatch"),rs.getFloat("averageMoveLostMatch"), rs.getFloat("score")));
                 }
             } catch (SQLException ex) {
                 Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
             }
-            return res;
-            
+            return res;            
         }
         public void sendListPlayer(){
-            ArrayList<User> res= new ArrayList<>();
+            ArrayList<User> res = new ArrayList<>();
             for(Map.Entry<String, Player> p : listPlayer.entrySet()){
-                res.add(p.getValue().user);
+                    res.add(p.getValue().user);
             }
-            if(res.size()>0){
-                Request req = new Request("sendListPlayer",(Object)res);
-                send(req);
-            }
-            else{
-                Request req = new Request("sendListPlayer",(Object)null);
-                send(req);
-            }
+            Request req = new Request("sendListPlayer",(Object)res);
+            send(req);
         }
         
         private void handleLogin(Request response) {

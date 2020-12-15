@@ -48,6 +48,7 @@ public class ClientController {
     private Home home;
     private Rank rank;
     private ArrayList<User> listRank;
+    ChessBoard chess;
     public ClientController(){
         open();
         login =new Login();
@@ -57,6 +58,7 @@ public class ClientController {
         
         new Listening().start();
         new updateOnline().start();
+
     }
     class ListenTableMain implements MouseListener{
 
@@ -65,7 +67,7 @@ public class ClientController {
             JTable table = home.getTable();
             int row = table.rowAtPoint(e.getPoint());
             String userName = (String) table.getValueAt(row, 0);
-            if(home.showConfirmYesNo("Ban co muon thach dau voi "+userName, "Thach dau")==0){
+            if(home.showConfirmYesNo("Bạn có muốn thách đấu với "+userName+" không?", "Thach dau")==0){
                 Request req = new Request("challenge",(Object)userName);
                 send(req);
             }
@@ -104,15 +106,14 @@ public class ClientController {
             }
         }
     }
-    public void getListPlayer(){
-            Request req = new Request("getListPlayer");
-            send(req);
-     }
+    public void getListPlayer() {
+        Request req = new Request("getListPlayer");
+        send(req);
+    }
     class Listening extends Thread{
         
         @Override
         public void run() {
-//            super.run(); //To change body of generated methods, choose Tools | Templates.
             while (true) {                
                 try {
                     Request response = (Request) ois.readObject();
@@ -147,13 +148,14 @@ public class ClientController {
             }
         }
         public void handleWin(Request res){
-            System.out.println("okk");
+            System.out.println("ok");
             String user = (String)res.getData();
-            home.showM("ban da thang "+user);
+            home.showM("Bạn đã thắng "+user);
+            chess.dispose();
         }
         public void handlePlay(Request res){
             String user = (String) res.getData();
-            ChessBoard chess = new ChessBoard();
+            chess = new ChessBoard();
             chess.addActionBtnSur(new ListenBtnSur(user,chess));
             chess.setVisible(true);
         }
@@ -265,10 +267,12 @@ public class ClientController {
             
         }
         public void handleListPlayer(Request res){
-            if(res.getData()!=null){
-                ArrayList<User> list = (ArrayList<User>) res.getData();
+            ArrayList<User> list = (ArrayList<User>) res.getData();
+            System.out.println(list.size());
+            if(home instanceof Home){
                 home.showListPlayer(list);
             }
+            
         }
         private void handleLogin(Request response) {
             if(response.getData() instanceof User){
