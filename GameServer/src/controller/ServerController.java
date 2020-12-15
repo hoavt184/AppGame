@@ -218,7 +218,9 @@ public class ServerController {
         
         public void handleAccept(Request res){
             String user = (String) res.getData();
-            Request req = new Request("play",(Object)user);
+            String nameAction = "thach dau,";
+            String dataResponse = nameAction+user;
+            Request req = new Request("play",(Object)dataResponse);
             send(req);
             for(Map.Entry<String ,Player> p : listPlayer.entrySet()){
                 if(p.getKey().equals(this.user.getUserName())){
@@ -229,8 +231,10 @@ public class ServerController {
             for(Map.Entry<String, Player> p :listPlayer.entrySet()){
                 if(p.getKey().equals(user)){
                     try {
+                        nameAction = "bi thach dau,";
+                        dataResponse = nameAction+this.user.getUserName();
                         p.getValue().user.setStatus(2);
-                        Request req1 = new Request("play",(Object)this.user.getUserName());
+                        Request req1 = new Request("play",(Object)dataResponse);
                         p.getValue().oos.writeObject(req1);
                         break;
                     } catch (IOException ex) {

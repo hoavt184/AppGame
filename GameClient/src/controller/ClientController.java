@@ -24,9 +24,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.util.Pair;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 import view.ChessBoard;
+import view.ChessGameDemo;
 import view.Home;
 import view.Login;
 import view.Rank;
@@ -67,7 +70,7 @@ public class ClientController {
             JTable table = home.getTable();
             int row = table.rowAtPoint(e.getPoint());
             String userName = (String) table.getValueAt(row, 0);
-            if(home.showConfirmYesNo("Bạn có muốn thách đấu với "+userName+" không?", "Thach dau")==0){
+            if(home.showConfirmYesNo("Bạn có muốn thách đấu với "+userName+" không?", "Mời thách đấu")==0){
                 Request req = new Request("challenge",(Object)userName);
                 send(req);
             }
@@ -150,14 +153,25 @@ public class ClientController {
         public void handleWin(Request res){
             System.out.println("ok");
             String user = (String)res.getData();
-            home.showM("Bạn đã thắng "+user);
+            home.showM("Đối thủ đã đầu hàng!\nBạn đã thắng "+user);
             chess.dispose();
         }
         public void handlePlay(Request res){
-            String user = (String) res.getData();
-            chess = new ChessBoard();
-            chess.addActionBtnSur(new ListenBtnSur(user,chess));
-            chess.setVisible(true);
+            String dataResponse = (String) res.getData();
+            String[] tmp = dataResponse.split(",");
+            String user = tmp[1];
+            String nameAction = tmp[0];
+            JFrame frame = new ChessGameDemo(nameAction);
+            frame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            frame.pack();
+            frame.setResizable(true);
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+//            ChessGameDemo view = new ChessGameDemo(nameAction);
+//            view.setVisible(true);
+//            chess = new ChessBoard();
+//            chess.addActionBtnSur(new ListenBtnSur(user,chess));
+//            chess.setVisible(true);
         }
         class ListenBtnSur implements ActionListener{
             private String user ;
@@ -171,12 +185,11 @@ public class ClientController {
                 chess.dispose();
                 Request req = new Request("Sur",(Object)user);
                 send(req);
-            }
-            
+            }            
         }
         public void handleInvite(Request res){
             String user = (String) res.getData();
-            if(home.showConfirmYesNo(user +" Muốn thách đấu với bạn", "loi moi")==0){
+            if(home.showConfirmYesNo(user +" muốn thách đấu với bạn", "Lời mời thách đấu")==0){
                 Request req = new Request("acceptInvite",(Object)user);
                 send(req);
             }
@@ -268,7 +281,6 @@ public class ClientController {
         }
         public void handleListPlayer(Request res){
             ArrayList<User> list = (ArrayList<User>) res.getData();
-            System.out.println(list.size());
             if(home instanceof Home){
                 home.showListPlayer(list);
             }
