@@ -36,7 +36,7 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 import view.ChessBoard;
-import view.ChessGameDemo;
+import view.ChessGame;
 import view.Home;
 import view.Login;
 import view.Rank;
@@ -58,8 +58,7 @@ public class ClientController {
     private Home home;
     private Rank rank;
     private ArrayList<User> listRank;
-    private ChessBoard chess;
-    private ChessGameDemo test;
+    private ChessGame chess;
     private int bx,by, ax,ay;
     private String userNameCompititor;
     public ClientController(){
@@ -169,13 +168,13 @@ public class ClientController {
             String user = (String) res.getData2();
             int[] moves = (int[]) res.getData();
             
-            test.movePiece(moves[0],moves[1],moves[2], moves[3]);
+            chess.movePiece(moves[0],moves[1],moves[2], moves[3]);
         }
         public void handleWin(Request res){
             System.out.println("ok");
             String user = (String)res.getData();
             home.showM("Đối thủ đã đầu hàng!\nBạn đã thắng "+user);
-            test.dispose();
+            chess.dispose();
         }
         public void handlePlay(Request res){
             String dataResponse = (String) res.getData();
@@ -183,23 +182,23 @@ public class ClientController {
             String user = tmp[1];
             userNameCompititor = tmp[1];
             String nameAction = tmp[0];
-            test = new ChessGameDemo(nameAction);
-            test.addListenBtnSur(new ListenBtnSur((user)));
-            test.addListenChess(new ListenChessBoard(), new ListenMouseMotion());
-            test.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-            test.pack();
-            test.setResizable(true);
-            test.setLocationRelativeTo(null);
-            test.setVisible(true);
+            chess = new ChessGame(nameAction);
+            chess.addListenBtnSur(new ListenBtnSur((user)));
+            chess.addListenChess(new ListenChessBoard(), new ListenMouseMotion());
+            chess.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            chess.pack();
+            chess.setResizable(true);
+            chess.setLocationRelativeTo(null);
+            chess.setVisible(true);
         }
         class ListenMouseMotion implements MouseMotionListener{
 
             @Override
             public void mouseDragged(MouseEvent me) {
-                if (test.chessPiece == null) {
+                if (chess.chessPiece == null) {
                     return;
                 }
-                test.chessPiece.setLocation(me.getX() + test.xAdjustment, me.getY() + test.yAdjustment);
+                chess.chessPiece.setLocation(me.getX() + chess.xAdjustment, me.getY() + chess.yAdjustment);
                 
             }
 
@@ -218,8 +217,8 @@ public class ClientController {
 
             @Override
             public void mousePressed(MouseEvent e) {
-                test.chessPiece = null;
-                Component c = test.chessBoard.findComponentAt(e.getX(), e.getY());
+                chess.chessPiece = null;
+                Component c = chess.chessBoard.findComponentAt(e.getX(), e.getY());
 
                 if (c instanceof JPanel) {
                     return;
@@ -228,32 +227,32 @@ public class ClientController {
                 Point parentLocation = c.getParent().getLocation();
 
                 // parentLocation.x,y la toa do vi tri hien tamousei;
-                test.xAdjustment = parentLocation.x - e.getX();
-                test.yAdjustment = parentLocation.y - e.getY();
+                chess.xAdjustment = parentLocation.x - e.getX();
+                chess.yAdjustment = parentLocation.y - e.getY();
 //                System.out.println("From ");
 //                System.out.println(parentLocation.x + "+" + parentLocation.y);
                 bx = parentLocation.x;
                 by = parentLocation.y;
-                test.chessPiece = (JLabel) c;
-                test.chessPiece.setLocation(e.getX() + test.xAdjustment, e.getY() + test.yAdjustment);
+                chess.chessPiece = (JLabel) c;
+                chess.chessPiece.setLocation(e.getX() + chess.xAdjustment, e.getY() + chess.yAdjustment);
                 
-                System.out.println((e.getX()+test.xAdjustment)+"-"+(e.getY()+test.yAdjustment));
-//                bx = (e.getX()+test.xAdjustment);
-//                by = (e.getY()+test.yAdjustment);
+                System.out.println((e.getX()+chess.xAdjustment)+"-"+(e.getY()+chess.yAdjustment));
+//                bx = (e.getX()+chess.xAdjustment);
+//                by = (e.getY()+chess.yAdjustment);
 //                System.out.println();
-                test.chessPiece.setSize(test.chessPiece.getWidth(), test.chessPiece.getHeight());
-                test.layeredPane.add(test.chessPiece, JLayeredPane.DRAG_LAYER);
+                chess.chessPiece.setSize(chess.chessPiece.getWidth(), chess.chessPiece.getHeight());
+                chess.layeredPane.add(chess.chessPiece, JLayeredPane.DRAG_LAYER);
             }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (test.chessPiece == null) {
+                if (chess.chessPiece == null) {
                     return;
                 }
                  
-                test.chessPiece.setVisible(false);
+                chess.chessPiece.setVisible(false);
 
-                Component c = test.chessBoard.findComponentAt(e.getX(), e.getY());
+                Component c = chess.chessBoard.findComponentAt(e.getX(), e.getY());
 //                System.out.println(" to ");
 //                System.out.println(c.getX() + "+" + c.getY());
                 ax = c.getX();
@@ -262,19 +261,19 @@ public class ClientController {
 //                    System.out.println("if");
                     Container parent = c.getParent();
                     parent.remove(0);
-                    parent.add(test.chessPiece);
+                    parent.add(chess.chessPiece);
                 } else {
 //                    System.out.println("else
                     Container parent = (Container) c;
-                    parent.add(test.chessPiece);
+                    parent.add(chess.chessPiece);
                 }
                 
-                test.sum++;
-                System.out.println(test.sum);
-                int[] data ={bx,by,ax,ay,test.sum};
+                chess.sum++;
+                System.out.println(chess.sum);
+                int[] data ={bx,by,ax,ay,chess.sum};
                 Request req = new Request("move",(Object)data,(Object)(userNameCompititor));
                 send(req);
-                test.chessPiece.setVisible(true);
+                chess.chessPiece.setVisible(true);
             }
 
             @Override
@@ -295,8 +294,8 @@ public class ClientController {
             }
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(test.showConfirmYesNo("Bạn có chắc chắn muốn đầu hàng không?", "Đầu hàng")==0){
-                    test.dispose();
+                if(chess.showConfirmYesNo("Bạn có chắc chắn muốn đầu hàng không?", "Đầu hàng")==0){
+                    chess.dispose();
                     Request req = new Request("Sur",(Object)user);
                     send(req);
                 }

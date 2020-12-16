@@ -30,7 +30,7 @@ import javax.swing.JPanel;
  *
  * @author Vu Tien Hoa
  */
-public class ChessGameDemo extends JFrame  {
+public class ChessGame extends JFrame  {
 
     public JLayeredPane layeredPane;
     public JButton btnSur = new JButton("Surrender");
@@ -48,7 +48,7 @@ public class ChessGameDemo extends JFrame  {
         layeredPane.addMouseListener(m1);
         layeredPane.addMouseMotionListener(m2);
     }
-    public ChessGameDemo(String nameAction) {
+    public ChessGame(String nameAction) {
         this.nameAction = nameAction;
 
         JPanel mainPanel = new JPanel();
