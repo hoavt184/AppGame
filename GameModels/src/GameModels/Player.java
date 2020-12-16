@@ -19,6 +19,7 @@ public class Player {
     public User user;
     public ObjectOutputStream oos;
     public ObjectInputStream ois ;
+    public int sum = 0;
     public Player(Socket socket){
         this.socket = socket;
        

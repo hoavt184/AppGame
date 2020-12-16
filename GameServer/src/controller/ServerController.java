@@ -78,6 +78,7 @@ public class ServerController {
         private Socket clientSocket;
         private ObjectOutputStream oos;
         private ObjectInputStream ois;
+        private int me=0,you=0;
         private User user;
 
         public Listening(Socket clientSocket) {
@@ -116,6 +117,9 @@ public class ServerController {
                         case "Sur":
                             handleSur(response);
                             break;
+                        case "move":
+                            handleMove(response);
+                            break;
                     }
                 } catch (IOException ex) {
                     try {
@@ -132,6 +136,29 @@ public class ServerController {
                 
             }
         }
+        public void handleMove(Request res){
+           
+            String userCP = (String)res.getData2();
+            int[] moves = (int[]) res.getData();
+            int sum = moves[4];
+            for(Map.Entry<String,Player> p: listPlayer.entrySet())
+            {
+                if(this.user.getUserName().equals(p.getKey())){
+                    p.getValue().sum = sum;
+                    break;
+                }
+            }
+            for(Map.Entry<String, Player> p : listPlayer.entrySet()){
+                if(p.getKey().equals(userCP)){
+                    try {
+                        Request req = new Request("move",(Object)moves,(Object)userCP);
+                        p.getValue().oos.writeObject(req);
+                    } catch (IOException ex) {
+                        Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        }
         public void handleSur(Request res){
             String user =(String) res.getData();
             float score = getScore(user);
@@ -139,10 +166,21 @@ public class ServerController {
             updateScore(user,score);
             int total = getTotalWinMatch(user);
             total++;
-            updateTotalWinMatch(user, total);
+            
+            
+            for(Map.Entry<String, Player> p :listPlayer.entrySet()){
+                if(p.getKey().equals(this.user.getUserName())){
+                        System.out.println("lost");
+                        updateTotalMoveLost(p.getKey(),p.getValue().sum);
+                        
+                        break;
+                   
+                }
+            }
             for(Map.Entry<String, Player> p :listPlayer.entrySet()){
                 if(p.getKey().equals(user)){
                     try {
+                        updateTotalMoveWin(p.getKey(),p.getValue().sum);
                         Request req = new Request("youWin",(Object)this.user.getUserName());
                         p.getValue().oos.writeObject(req);
                         break;
@@ -151,7 +189,30 @@ public class ServerController {
                     }
                 }
             }
+            
           
+        }
+        public void updateTotalMoveWin(String user,int sum){
+            try {
+                String sql = "update tbl_user set totalMoveWinMatch=? where userName=?";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setInt(1,sum+getTotalMoveWin(user));
+                ps.setString(2,user);
+                ps.execute();
+            } catch (SQLException ex) {
+                Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        public void updateTotalMoveLost(String user, int sum){
+            try {
+                String sql = "update tbl_user set totalMoveLost=? where userName=?";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setInt(1, sum+getTotalMoveLost(user));
+                ps.setString(2,user);
+                ps.execute();
+            } catch (SQLException ex) {
+                Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         public void updateTotalWinMatch(String user, int total){
             try {
@@ -243,6 +304,32 @@ public class ServerController {
                 }
             }
         }
+        public int getTotalMoveLost(String user){
+            try {
+                String sql ="select * from tbl_user where userName=?";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setString(1, user);
+                ResultSet rs = ps.executeQuery();
+                rs.next();
+                return rs.getInt("totalMoveLost");
+            } catch (SQLException ex) {
+                Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return 0;
+        }
+        public int getTotalMoveWin(String user){
+            try {
+                String sql ="select * from tbl_user where userName=?";
+                PreparedStatement ps = con.prepareStatement(sql);
+                ps.setString(1, user);
+                ResultSet rs = ps.executeQuery();
+                rs.next();
+                return rs.getInt("totalMoveWinMatch");
+            } catch (SQLException ex) {
+                Logger.getLogger(ServerController.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            return 0;
+        }
         public void forwardInvite(Request res){
             String userName = (String) res.getData();
             for(Map.Entry<String, Player> p : listPlayer.entrySet()){
@@ -277,12 +364,12 @@ public class ServerController {
             }
             return res;            
         }
-        public void sendListPlayer(){
+        public void sendListPlayer() {
             ArrayList<User> res = new ArrayList<>();
-            for(Map.Entry<String, Player> p : listPlayer.entrySet()){
-                    res.add(p.getValue().user);
+            for (Map.Entry<String, Player> p : listPlayer.entrySet()) {
+                res.add(p.getValue().user);
             }
-            Request req = new Request("sendListPlayer",(Object)res);
+            Request req = new Request("sendListPlayer", (Object) res);
             send(req);
         }
         

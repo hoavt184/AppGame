@@ -7,10 +7,14 @@ package controller;
 
 import GameModels.Request;
 import GameModels.User;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -25,7 +29,10 @@ import java.util.logging.Logger;
 import javafx.util.Pair;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 import view.ChessBoard;
@@ -53,7 +60,10 @@ public class ClientController {
     private ArrayList<User> listRank;
     private ChessBoard chess;
     private ChessGameDemo test;
+    private int bx,by, ax,ay;
+    private String userNameCompititor;
     public ClientController(){
+       
         open();
         login =new Login();
         login.setVisible(true);
@@ -64,6 +74,7 @@ public class ClientController {
         new updateOnline().start();
 
     }
+    
     class ListenTableMain implements MouseListener{
 
         @Override
@@ -143,6 +154,9 @@ public class ClientController {
                         case "youWin":
                             handleWin(response);
                             break;
+                        case "move":
+                            handleMove(response);
+                            break;
                     }
                 } catch (IOException ex) {
                     Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
@@ -150,6 +164,12 @@ public class ClientController {
                     Logger.getLogger(ClientController.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+        }
+        public void handleMove(Request res){
+            String user = (String) res.getData2();
+            int[] moves = (int[]) res.getData();
+            
+            test.movePiece(moves[0],moves[1],moves[2], moves[3]);
         }
         public void handleWin(Request res){
             System.out.println("ok");
@@ -161,27 +181,110 @@ public class ClientController {
             String dataResponse = (String) res.getData();
             String[] tmp = dataResponse.split(",");
             String user = tmp[1];
+            userNameCompititor = tmp[1];
             String nameAction = tmp[0];
             test = new ChessGameDemo(nameAction);
             test.addListenBtnSur(new ListenBtnSur((user)));
+            test.addListenChess(new ListenChessBoard(), new ListenMouseMotion());
             test.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
             test.pack();
             test.setResizable(true);
             test.setLocationRelativeTo(null);
             test.setVisible(true);
-//            test.addListenBtnSur();
-//            ChessGameDemo frame = new ChessGameDemo(nameAction);
-////            frame.addListenBtnSur(new ListenBtnSur(user, chess));
-//            frame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-//            frame.pack();
-//            frame.setResizable(true);
-//            frame.setLocationRelativeTo(null);
-//            frame.setVisible(true);
-//            ChessGameDemo view = new ChessGameDemo(nameAction);
-//            view.setVisible(true);
-//            chess = new ChessBoard();
-//            chess.addActionBtnSur(new ListenBtnSur(user,chess));
-//            chess.setVisible(true);
+        }
+        class ListenMouseMotion implements MouseMotionListener{
+
+            @Override
+            public void mouseDragged(MouseEvent me) {
+                if (test.chessPiece == null) {
+                    return;
+                }
+                test.chessPiece.setLocation(me.getX() + test.xAdjustment, me.getY() + test.yAdjustment);
+                
+            }
+
+            
+            @Override
+            public void mouseMoved(MouseEvent e) {
+            }
+            
+        }
+        
+        class ListenChessBoard implements MouseListener{
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                test.chessPiece = null;
+                Component c = test.chessBoard.findComponentAt(e.getX(), e.getY());
+
+                if (c instanceof JPanel) {
+                    return;
+                }
+
+                Point parentLocation = c.getParent().getLocation();
+
+                // parentLocation.x,y la toa do vi tri hien tamousei;
+                test.xAdjustment = parentLocation.x - e.getX();
+                test.yAdjustment = parentLocation.y - e.getY();
+//                System.out.println("From ");
+//                System.out.println(parentLocation.x + "+" + parentLocation.y);
+                bx = parentLocation.x;
+                by = parentLocation.y;
+                test.chessPiece = (JLabel) c;
+                test.chessPiece.setLocation(e.getX() + test.xAdjustment, e.getY() + test.yAdjustment);
+                
+                System.out.println((e.getX()+test.xAdjustment)+"-"+(e.getY()+test.yAdjustment));
+//                bx = (e.getX()+test.xAdjustment);
+//                by = (e.getY()+test.yAdjustment);
+//                System.out.println();
+                test.chessPiece.setSize(test.chessPiece.getWidth(), test.chessPiece.getHeight());
+                test.layeredPane.add(test.chessPiece, JLayeredPane.DRAG_LAYER);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (test.chessPiece == null) {
+                    return;
+                }
+                 
+                test.chessPiece.setVisible(false);
+
+                Component c = test.chessBoard.findComponentAt(e.getX(), e.getY());
+//                System.out.println(" to ");
+//                System.out.println(c.getX() + "+" + c.getY());
+                ax = c.getX();
+                ay = c.getY();
+                if (c instanceof JLabel) {
+//                    System.out.println("if");
+                    Container parent = c.getParent();
+                    parent.remove(0);
+                    parent.add(test.chessPiece);
+                } else {
+//                    System.out.println("else
+                    Container parent = (Container) c;
+                    parent.add(test.chessPiece);
+                }
+                
+                test.sum++;
+                System.out.println(test.sum);
+                int[] data ={bx,by,ax,ay,test.sum};
+                Request req = new Request("move",(Object)data,(Object)(userNameCompititor));
+                send(req);
+                test.chessPiece.setVisible(true);
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+
         }
         class ListenBtnSur implements ActionListener{
             private String user ;
@@ -192,9 +295,11 @@ public class ClientController {
             }
             @Override
             public void actionPerformed(ActionEvent e) {
-                test.dispose();
-                Request req = new Request("Sur",(Object)user);
-                send(req);
+                if(test.showConfirmYesNo("Bạn có chắc chắn muốn đầu hàng không?", "Đầu hàng")==0){
+                    test.dispose();
+                    Request req = new Request("Sur",(Object)user);
+                    send(req);
+                }
             }            
         }
         public void handleInvite(Request res){
