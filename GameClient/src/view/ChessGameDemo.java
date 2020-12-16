@@ -29,7 +29,7 @@ import javax.swing.JPanel;
  *
  * @author Vu Tien Hoa
  */
-public class ChessGameDemo extends JFrame implements MouseListener, MouseMotionListener, ActionListener {
+public class ChessGameDemo extends JFrame implements MouseListener, MouseMotionListener {
 
     JLayeredPane layeredPane;
     JButton btnSur = new JButton("Surrender");
@@ -40,7 +40,7 @@ public class ChessGameDemo extends JFrame implements MouseListener, MouseMotionL
     String nameAction;
 
     public void addListenBtnSur(ActionListener l) {
-        btnSur.addActionListener(this);
+        btnSur.addActionListener(l);
     }
 
     public ChessGameDemo(String nameAction) {
@@ -240,8 +240,12 @@ public class ChessGameDemo extends JFrame implements MouseListener, MouseMotionL
         }
 
         Point parentLocation = c.getParent().getLocation();
+        
+        // parentLocation.x,y la toa do vi tri hien tai;
         xAdjustment = parentLocation.x - e.getX();
         yAdjustment = parentLocation.y - e.getY();
+        System.out.println("From ");
+        System.out.println(parentLocation.x+"+"+parentLocation.y);
         chessPiece = (JLabel) c;
         chessPiece.setLocation(e.getX() + xAdjustment, e.getY() + yAdjustment);
         chessPiece.setSize(chessPiece.getWidth(), chessPiece.getHeight());
@@ -261,19 +265,68 @@ public class ChessGameDemo extends JFrame implements MouseListener, MouseMotionL
         }
 
         chessPiece.setVisible(false);
+        
         Component c = chessBoard.findComponentAt(e.getX(), e.getY());
-
+        System.out.println(" to ");
+        System.out.println(c.getX()+"+"+c.getY());
         if (c instanceof JLabel) {
+            System.out.println("if");
             Container parent = c.getParent();
             parent.remove(0);
             parent.add(chessPiece);
         } else {
+            System.out.println("else");
             Container parent = (Container) c;
             parent.add(chessPiece);
         }
         chessPiece.setVisible(true);
     }
+    public void movePiece(int beforX, int beforY, int afterX,int afterY){
+        
+        
+        // chuyen doi vi tri quan co tu doi thu sang co cua minh
+        int beforMoveX = 525 - beforX;
+        int beforMoveY = 525 - beforY;
+        
+        int afterMoveX = 525 - afterX;
+        int afterMoveY = 525 - afterY;
+        
+        //tim kiem quan co truoc khi di chuyen
+        chessPiece = null;
+        Component c1 = chessBoard.findComponentAt(beforMoveX, beforMoveY);
+        if (c1 instanceof JPanel) {
+            return;
+        }
+        Point parentLocation = c1.getParent().getLocation();
+        
+        System.out.println("From ");
+        System.out.println(parentLocation.x+"+"+parentLocation.y);
+        chessPiece = (JLabel) c1;
+        chessPiece.setLocation(0,0);
+        chessPiece.setSize(chessPiece.getWidth(), chessPiece.getHeight());
+        layeredPane.add(chessPiece, JLayeredPane.DRAG_LAYER);
+        
+        
+        
+        
+        
+        //di chuyen quan co da tim kiem
+        if (chessPiece == null) {
+            return;
+        }
 
+        chessPiece.setVisible(false);
+        Component c2 = chessBoard.findComponentAt(afterMoveX, afterMoveY);
+        if (c2 instanceof JLabel) {
+            Container parent = c2.getParent();
+            parent.remove(0);
+            parent.add(chessPiece);
+        } else {
+            Container parent = (Container) c2;
+            parent.add(chessPiece);
+        }
+        chessPiece.setVisible(true);
+    }
     public void mouseClicked(MouseEvent e) {
 
     }
@@ -290,16 +343,12 @@ public class ChessGameDemo extends JFrame implements MouseListener, MouseMotionL
     }
 
     public static void main(String[] args) {
-        JFrame frame = new ChessGameDemo("thach dau");
+        ChessGameDemo frame = new ChessGameDemo("thach dau");
         frame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         frame.pack();
         frame.setResizable(true);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-    }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        frame.movePiece(75, 450, 75,375);
     }
 }

@@ -51,7 +51,8 @@ public class ClientController {
     private Home home;
     private Rank rank;
     private ArrayList<User> listRank;
-    ChessBoard chess;
+    private ChessBoard chess;
+    private ChessGameDemo test;
     public ClientController(){
         open();
         login =new Login();
@@ -154,19 +155,28 @@ public class ClientController {
             System.out.println("ok");
             String user = (String)res.getData();
             home.showM("Đối thủ đã đầu hàng!\nBạn đã thắng "+user);
-            chess.dispose();
+            test.dispose();
         }
         public void handlePlay(Request res){
             String dataResponse = (String) res.getData();
             String[] tmp = dataResponse.split(",");
             String user = tmp[1];
             String nameAction = tmp[0];
-            JFrame frame = new ChessGameDemo(nameAction);
-            frame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-            frame.pack();
-            frame.setResizable(true);
-            frame.setLocationRelativeTo(null);
-            frame.setVisible(true);
+            test = new ChessGameDemo(nameAction);
+            test.addListenBtnSur(new ListenBtnSur((user)));
+            test.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            test.pack();
+            test.setResizable(true);
+            test.setLocationRelativeTo(null);
+            test.setVisible(true);
+//            test.addListenBtnSur();
+//            ChessGameDemo frame = new ChessGameDemo(nameAction);
+////            frame.addListenBtnSur(new ListenBtnSur(user, chess));
+//            frame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+//            frame.pack();
+//            frame.setResizable(true);
+//            frame.setLocationRelativeTo(null);
+//            frame.setVisible(true);
 //            ChessGameDemo view = new ChessGameDemo(nameAction);
 //            view.setVisible(true);
 //            chess = new ChessBoard();
@@ -175,14 +185,14 @@ public class ClientController {
         }
         class ListenBtnSur implements ActionListener{
             private String user ;
-            private ChessBoard chess;
-            public ListenBtnSur(String user, ChessBoard chess){
+//            private ChessBoard chess;
+            public ListenBtnSur(String user){
                 this.user = user;
-                this.chess = chess;
+//                this.chess = chess;
             }
             @Override
             public void actionPerformed(ActionEvent e) {
-                chess.dispose();
+                test.dispose();
                 Request req = new Request("Sur",(Object)user);
                 send(req);
             }            
